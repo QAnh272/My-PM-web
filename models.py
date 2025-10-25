@@ -1,7 +1,3 @@
-"""
-Models module - Import từ venv/apps/models package
-File này giữ lại để backward compatibility
-"""
 import sys
 from pathlib import Path
 
