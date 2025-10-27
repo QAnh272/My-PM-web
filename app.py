@@ -5,37 +5,32 @@ import sys
 import os
 from pathlib import Path
 from datetime import timedelta
-
-# Add venv/apps to Python path
 sys.path.insert(0, str(Path(__file__).parent / 'venv' / 'apps'))
 
 from flask import Flask, jsonify, session
 from flask_session import Session
-from database import init_db, get_db
-from models import User, Project, Task, Comment
+from apps.utils.db import init_db, get_db
+from apps.models import User, Project, Task, Comment
 
-# Import routers
 sys.path.insert(0, str(Path(__file__).parent / 'venv' / 'apps'))
 from apps.routers import auth_router
+from apps.routers.project_router import project_router
+from apps.routers.task_router import task_router
 
 app = Flask(__name__)
 
-# Configuration
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-this-in-production')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 
-# Initialize Session
 Session(app)
-
-# Register Blueprints
 app.register_blueprint(auth_router)
-
+app.register_blueprint(project_router)
+app.register_blueprint(task_router)
 
 @app.route('/')
 def home():
-    """Home route"""
     return jsonify({
         "message": "Welcome to Project Management System API",
         "version": "1.0.0"
@@ -44,9 +39,7 @@ def home():
 
 @app.route('/health')
 def health():
-    """Health check endpoint"""
     try:
-        # Try to connect to database
         db = next(get_db())
         db.execute("SELECT 1")
         db.close()
@@ -56,10 +49,7 @@ def health():
 
 
 if __name__ == '__main__':
-    # Initialize database
     print("Initializing database...")
     init_db()
-    
-    # Run the app
     print("Starting Flask application...")
     app.run(debug=True, host='0.0.0.0', port=5000)
