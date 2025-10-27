@@ -1,17 +1,15 @@
-"""
-User model - Quản lý người dùng
-"""
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, String, DateTime, Boolean
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from database import Base
+import uuid
+from apps.utils.db import Base
 
 
 class User(Base):
-    """User model"""
     __tablename__ = "users"
     
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(100), unique=True, nullable=False, index=True)
     full_name = Column(String(100), nullable=False)
@@ -20,7 +18,6 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationships
     owned_projects = relationship(
         "Project", 
         back_populates="owner", 
@@ -42,9 +39,8 @@ class User(Base):
         return f"<User {self.username}>"
 
     def to_dict(self):
-        """Convert to dictionary"""
         return {
-            'id': self.id,
+            'id': str(self.id),
             'username': self.username,
             'email': self.email,
             'full_name': self.full_name,
