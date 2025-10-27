@@ -34,14 +34,14 @@ def login():
     return AuthController.login()
 
 
-@auth_router.route('/me', methods=['GET'])
+@auth_router.route('/user/<user_id>', methods=['GET'])
 @token_required
-def get_current_user(current_user):
+def get_user(current_user, user_id):
     """
-    GET /api/auth/me
+    GET /api/auth/user/<user_id>
     Headers: Authorization: Bearer <token>
     """
-    return AuthController.get_current_user(current_user)
+    return AuthController.get_current_user(current_user, user_id)
 
 
 @auth_router.route('/logout', methods=['POST'])
@@ -54,11 +54,19 @@ def logout(current_user):
     return AuthController.logout(current_user)
 
 
-@auth_router.route('/refresh', methods=['POST'])
-@token_required
-def refresh_token(current_user):
+@auth_router.route('/request-reset-password', methods=['POST'])
+def request_reset_password():
     """
-    POST /api/auth/refresh
-    Headers: Authorization: Bearer <token>
+    POST /api/auth/request-reset-password
+    Body: {email}
     """
-    return AuthController.refresh_token(current_user)
+    return AuthController.request_reset_password()
+
+
+@auth_router.route('/reset-password', methods=['POST'])
+def reset_password():
+    """
+    POST /api/auth/reset-password
+    Body: {token, new_password}
+    """
+    return AuthController.reset_password()

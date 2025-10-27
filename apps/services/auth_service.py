@@ -17,6 +17,7 @@ from apps.models.user import User
 SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-this-in-production')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
+RESET_TOKEN_EXPIRATION_MINUTES = 15
 
 
 class AuthService:
@@ -48,6 +49,28 @@ class AuthService:
     def decode_token(token: str) -> Optional[Dict[str, Any]]:
         try:
             return jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        except jwt.InvalidTokenError:
+            return None
+    
+    @staticmethod
+    def create_reset_token(email: str) -> str:
+        payload = {
+            'email': email,
+            'type': 'reset_password',
+            'exp': datetime.utcnow() + timedelta(minutes=RESET_TOKEN_EXPIRATION_MINUTES),
+            'iat': datetime.utcnow()
+        }
+        return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
+    
+    @staticmethod
+    def verify_reset_token(token: str) -> Optional[str]:
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
+            if payload.get('type') == 'reset_password':
+                return payload.get('email')
+            return None
+        except jwt.ExpiredSignatureError:
+            return None
         except jwt.InvalidTokenError:
             return None
     
@@ -128,9 +151,41 @@ class AuthService:
             return None
     
     @staticmethod
-    def refresh_user_token(user_id: str, username: str) -> Tuple[bool, str, str]:
-        new_token = AuthService.create_token(user_id, username)
-        return True, "Token đã được làm mới", new_token
+    def request_reset_password(db: Session, email: str) -> Tuple[bool, str, Optional[str], Optional[str]]:
+        user = db.query(User).filter(User.email == email).first()
+        
+        if not user:
+            return False, "Email không tồn tại trong hệ thống", None, None
+        
+        if not user.is_active:
+            return False, "Tài khoản đã bị vô hiệu hóa", None, None
+        
+        reset_token = AuthService.create_reset_token(email)
+        
+        return True, "Email đặt lại mật khẩu đã được gửi", reset_token, user.username
+    
+    @staticmethod
+    def reset_password(db: Session, token: str, new_password: str) -> Tuple[bool, str, Optional[str]]:
+        email = AuthService.verify_reset_token(token)
+        
+        if not email:
+            return False, "Token không hợp lệ hoặc đã hết hạn", None
+        
+        user = db.query(User).filter(User.email == email).first()
+        
+        if not user:
+            return False, "Email không tồn tại trong hệ thống", None
+        
+        if not user.is_active:
+            return False, "Tài khoản đã bị vô hiệu hóa", None
+        
+        user.password_hash = AuthService.hash_password(new_password)
+        user.updated_at = datetime.utcnow()
+        db.commit()
+        
+        new_token = AuthService.create_token(user.id, user.username)
+        
+        return True, "Đặt lại mật khẩu thành công", new_token
     
     @staticmethod
     def user_to_dict(user: User) -> Dict[str, Any]:

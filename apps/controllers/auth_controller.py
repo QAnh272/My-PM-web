@@ -9,7 +9,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from apps.utils.db import SessionLocal
 from apps.services import AuthService
-from apps.validations import validate_register_data, validate_login_data
+from apps.services.email_service import EmailService
+from apps.validations import validate_register_data, validate_login_data, validate_reset_password_data, validate_request_reset_password
 
 
 class AuthController:
@@ -105,10 +106,10 @@ class AuthController:
             db.close()
     
     @staticmethod
-    def get_current_user(current_user):
+    def get_current_user(current_user, user_id):
         db = SessionLocal()
         try:
-            user = AuthService.get_user_by_id(db, current_user['user_id'])
+            user = AuthService.get_user_by_id(db, user_id)
             
             if not user:
                 return jsonify({
@@ -148,15 +149,80 @@ class AuthController:
             }), 500
     
     @staticmethod
-    def refresh_token(current_user):
+    def request_reset_password():
+        data = request.get_json()
+        
+        is_valid, error_msg = validate_request_reset_password(data)
+        if not is_valid:
+            return jsonify({
+                'success': False,
+                'message': error_msg
+            }), 400
+        
+        email = data['email'].strip()
+        
+        db = SessionLocal()
         try:
-            success, message, new_token = AuthService.refresh_user_token(
-                current_user['user_id'],
-                current_user['username']
-            )
+            success, message, reset_token, username = AuthService.request_reset_password(db, email)
+            
+            if not success:
+                status_code = 403 if "vô hiệu hóa" in message else 404
+                return jsonify({
+                    'success': False,
+                    'message': message
+                }), status_code
+            
+            email_sent = EmailService.send_reset_password_email(email, reset_token, username)
+            
+            if not email_sent:
+                return jsonify({
+                    'success': False,
+                    'message': 'Không thể gửi email. Vui lòng thử lại sau.'
+                }), 500
             
             return jsonify({
-                'success': success,
+                'success': True,
+                'message': 'Link đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.'
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': 'Đã xảy ra lỗi',
+                'error': str(e)
+            }), 500
+        finally:
+            db.close()
+    
+    @staticmethod
+    def reset_password():
+        data = request.get_json()
+        
+        is_valid, error_msg = validate_reset_password_data(data)
+        if not is_valid:
+            return jsonify({
+                'success': False,
+                'message': error_msg
+            }), 400
+        
+        token = data['token'].strip()
+        new_password = data['new_password']
+        
+        db = SessionLocal()
+        try:
+            success, message, new_token = AuthService.reset_password(
+                db, token, new_password
+            )
+            
+            if not success:
+                status_code = 403 if "vô hiệu hóa" in message else 400
+                return jsonify({
+                    'success': False,
+                    'message': message
+                }), status_code
+            
+            return jsonify({
+                'success': True,
                 'message': message,
                 'data': {
                     'token': new_token
@@ -169,3 +235,5 @@ class AuthController:
                 'message': 'Đã xảy ra lỗi',
                 'error': str(e)
             }), 500
+        finally:
+            db.close()

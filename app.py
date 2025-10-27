@@ -11,6 +11,7 @@ from flask import Flask, jsonify, session
 from flask_session import Session
 from apps.utils.db import init_db, get_db
 from apps.models import User, Project, Task, Comment
+from apps.services.email_service import EmailService
 
 sys.path.insert(0, str(Path(__file__).parent / 'venv' / 'apps'))
 from apps.routers import auth_router
@@ -25,6 +26,8 @@ app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 
 Session(app)
+EmailService.init_mail(app)
+
 app.register_blueprint(auth_router)
 app.register_blueprint(project_router)
 app.register_blueprint(task_router)

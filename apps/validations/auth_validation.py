@@ -85,3 +85,37 @@ def validate_password(password: str) -> bool:
         return False
     
     return True
+
+
+def validate_reset_password_data(data: Dict[str, Any]) -> Tuple[bool, str]:
+    if not data:
+        return False, "Dữ liệu không được để trống"
+    
+    token = data.get('token', '').strip()
+    new_password = data.get('new_password', '')
+    
+    if not token:
+        return False, "Token không được để trống"
+    
+    if not new_password:
+        return False, "Mật khẩu mới không được để trống"
+    
+    if not validate_password(new_password):
+        return False, "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
+    
+    return True, "Hợp lệ"
+
+
+def validate_request_reset_password(data: Dict[str, Any]) -> Tuple[bool, str]:
+    if not data:
+        return False, "Dữ liệu không được để trống"
+    
+    email = data.get('email', '').strip()
+    
+    if not email:
+        return False, "Email không được để trống"
+    
+    if not validate_email(email):
+        return False, "Email không hợp lệ"
+    
+    return True, "Hợp lệ"
