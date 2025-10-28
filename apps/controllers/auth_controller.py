@@ -1,6 +1,3 @@
-"""
-Authentication Controller - Xử lý requests và responses
-"""
 from flask import request, jsonify
 import sys
 from pathlib import Path
@@ -10,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from apps.utils.db import SessionLocal
 from apps.services import AuthService
 from apps.services.email_service import EmailService
-from apps.validations import validate_register_data, validate_login_data, validate_reset_password_data, validate_request_reset_password
+from apps.validations.auth_validation import validate_register_data, validate_login_data, validate_reset_password_data, validate_request_reset_password
 
 
 class AuthController:

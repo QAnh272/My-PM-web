@@ -1,6 +1,3 @@
-"""
-Task model - Quản lý công việc
-"""
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship

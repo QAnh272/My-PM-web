@@ -1,6 +1,3 @@
-"""
-Task Service - Business logic cho task management
-"""
 from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session
 from datetime import datetime

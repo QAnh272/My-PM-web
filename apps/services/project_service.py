@@ -1,6 +1,3 @@
-"""
-Project Service - Business logic cho project management
-"""
 from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session
 from datetime import datetime

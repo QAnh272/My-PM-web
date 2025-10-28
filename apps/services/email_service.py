@@ -1,6 +1,3 @@
-"""
-Email Service - Gửi email thông báo
-"""
 from flask_mail import Mail, Message
 from flask import current_app
 import os

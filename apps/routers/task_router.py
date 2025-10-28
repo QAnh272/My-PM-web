@@ -1,6 +1,3 @@
-"""
-Task Routes
-"""
 from flask import Blueprint
 from apps.controllers.task_controller import TaskController
 from apps.middlewares.auth_middleware import token_required

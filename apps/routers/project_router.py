@@ -1,6 +1,3 @@
-"""
-Project Routes
-"""
 from flask import Blueprint
 from apps.controllers.project_controller import ProjectController
 from apps.middlewares.auth_middleware import token_required

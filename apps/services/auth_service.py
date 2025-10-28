@@ -1,6 +1,3 @@
-"""
-Authentication Service - Business logic cho authentication
-"""
 import jwt
 import bcrypt
 from datetime import datetime, timedelta

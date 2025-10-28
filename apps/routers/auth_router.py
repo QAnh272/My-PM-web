@@ -1,17 +1,12 @@
-"""
-Authentication Routes
-"""
 from flask import Blueprint
 import sys
 from pathlib import Path
 
-# Add to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from apps.controllers import AuthController
 from apps.middlewares import token_required
 
-# Create blueprint
 auth_router = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 

@@ -1,6 +1,3 @@
-"""
-Task Controller
-"""
 from flask import request, jsonify
 from apps.utils.db import SessionLocal
 from apps.services.task_service import TaskService

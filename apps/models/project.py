@@ -1,6 +1,3 @@
-"""
-Project model - Quản lý dự án
-"""
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship

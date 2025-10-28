@@ -1,6 +1,3 @@
-"""
-Project Controller
-"""
 from flask import request, jsonify
 from apps.utils.db import SessionLocal
 from apps.services.project_service import ProjectService
