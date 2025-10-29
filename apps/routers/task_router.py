@@ -17,7 +17,7 @@ def get_task(current_user, task_id):
     return TaskController.get_task(current_user, task_id)
 
 
-@task_router.route('/my', methods=['GET'])
+@task_router.route('/my-tasks', methods=['GET'])
 @token_required
 def get_my_tasks(current_user):
     return TaskController.get_my_tasks(current_user)
