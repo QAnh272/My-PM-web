@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent / 'venv' / 'apps'))
 from apps.routers import auth_router
 from apps.routers.project_router import project_router
 from apps.routers.task_router import task_router
+from apps.routers.comment_router import comment_router
 
 app = Flask(__name__)
 
@@ -31,6 +32,7 @@ EmailService.init_mail(app)
 app.register_blueprint(auth_router)
 app.register_blueprint(project_router)
 app.register_blueprint(task_router)
+app.register_blueprint(comment_router)
 
 @app.route('/')
 def home():
@@ -38,19 +40,7 @@ def home():
         "message": "Welcome to Project Management System API",
         "version": "1.0.0"
     })
-
-
-@app.route('/health')
-def health():
-    try:
-        db = next(get_db())
-        db.execute("SELECT 1")
-        db.close()
-        return jsonify({"status": "healthy", "database": "connected"})
-    except Exception as e:
-        return jsonify({"status": "unhealthy", "error": str(e)}), 500
-
-
+    
 if __name__ == '__main__':
     print("Initializing database...")
     init_db()
