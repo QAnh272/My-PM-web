@@ -97,6 +97,38 @@ class ProjectController:
             db.close()
     
     @staticmethod
+    def get_all_projects(current_user):
+        """Get all projects (with pagination)"""
+        db = SessionLocal()
+        try:
+            page = int(request.args.get('page', 1))
+            limit = int(request.args.get('limit', 20))
+            skip = (page - 1) * limit
+            
+            projects = ProjectService.get_all_projects(db, skip, limit)
+            
+            return jsonify({
+                'success': True,
+                'data': {
+                    'projects': [ProjectService.project_to_dict(p) for p in projects],
+                    'pagination': {
+                        'page': page,
+                        'limit': limit,
+                        'count': len(projects)
+                    }
+                }
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': 'Đã xảy ra lỗi',
+                'error': str(e)
+            }), 500
+        finally:
+            db.close()
+    
+    @staticmethod
     def get_my_projects(current_user):
         db = SessionLocal()
         try:
